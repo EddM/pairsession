@@ -18,3 +18,4 @@ api/tmp/*
 api/.byebug_history
 
 client/dist
+client/node_modules
