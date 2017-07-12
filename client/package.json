@@ -12,6 +12,7 @@
     "extract-text-webpack-plugin": "^3.0.0",
     "html-webpack-plugin": "^2.29.0",
     "node-sass": "^4.5.3",
+    "ot": "^0.0.15",
     "path": "^0.12.7",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
