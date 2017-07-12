@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const DashboardPlugin = require('webpack-dashboard/plugin');
 
 module.exports = {
   entry: ['./index.js', './styles/index.scss'],
@@ -18,5 +19,6 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({ template: 'index.html', filename: 'index.html', inject: 'body' }),
     new ExtractTextPlugin('./styles/index.css', { allChunks: true }),
+    new DashboardPlugin()
   ]
 };
