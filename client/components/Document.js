@@ -32,13 +32,16 @@ export default class Document extends React.Component {
 
   render() {
     return (
-      <ContentEditable
-        tagName='pre'
-        className='doc-editor'
-        ref={editor => this.editor = editor}
-        onChange={this.props.handleInput}
-        html={this.props.document.contents}
-      />
+      <div className='document-editor-container'>
+        <ContentEditable
+          tagName='pre'
+          className='document-editor'
+          ref={editor => this.editor = editor}
+          onChange={this.props.handleInput}
+          html={this.props.document.contents}
+          spellCheck={false}
+        />
+      </div>
     );
   }
 };

@@ -6,7 +6,10 @@ export default class App extends React.Component {
   render() {
     return (
       <div>
-        <h1>PairSession</h1>
+        <header className="site-header">
+          <h1>PairSession</h1>
+        </header>
+
         <DocumentContainer dispatch={this.props.dispatch} document={this.props.document} />
       </div>
     );
