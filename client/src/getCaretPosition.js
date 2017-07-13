@@ -2,7 +2,7 @@ const getCaretPosition = (element) => {
   let caretOffset = 0;
   let node = null;
 
-  if (typeof window.getSelection != "undefined") {
+  if (typeof window.getSelection != "undefined" && window.getSelection().rangeCount > 0) {
     const range = window.getSelection().getRangeAt(0);
     const preCaretRange = range.cloneRange();
 

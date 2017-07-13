@@ -31,10 +31,6 @@ export default class Document extends React.Component {
     sel.addRange(range);
   }
 
-  componentDidMount() {
-    this.editor.htmlEl.focus();
-  }
-
   render() {
     return (
       <div className='document-editor-container'>
