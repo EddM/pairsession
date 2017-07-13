@@ -20,14 +20,19 @@ export default class Document extends React.Component {
   componentDidUpdate() {
     const range = document.createRange();
     const sel = window.getSelection();
+    const caretPosition = this.state.caretPosition;
 
     if (this.editor.htmlEl.childNodes[0]) {
-      range.setStart(this.editor.htmlEl.childNodes[0], this.state.caretPosition);
+      range.setStart(caretPosition[0], caretPosition[1]);
       range.collapse(true);
     }
 
     sel.removeAllRanges();
     sel.addRange(range);
+  }
+
+  componentDidMount() {
+    this.editor.htmlEl.focus();
   }
 
   render() {

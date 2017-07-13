@@ -1,29 +1,23 @@
-export default (editableDiv) => {
-  let caretPos = 0;
+const getCaretPosition = (element) => {
+  let caretOffset = 0;
+  let node = null;
 
-  if (window.getSelection) {
-    const sel = window.getSelection();
+  if (typeof window.getSelection != "undefined") {
+    const range = window.getSelection().getRangeAt(0);
+    const preCaretRange = range.cloneRange();
 
-    if (sel.rangeCount) {
-      const range = sel.getRangeAt(0);
+    caretOffset = range.endOffset;
+    node = range.commonAncestorContainer;
+  } else if (typeof document.selection != "undefined" && document.selection.type != "Control") {
+    const textRange = document.selection.createRange();
+    const preCaretTextRange = document.body.createTextRange();
 
-      if (range.commonAncestorContainer.parentNode == editableDiv) {
-        caretPos = range.endOffset;
-      }
-    }
-  } else if (document.selection && document.selection.createRange) {
-    const range = document.selection.createRange();
-
-    if (range.parentElement() == editableDiv) {
-      const tempEl = document.createElement("span");
-      editableDiv.insertBefore(tempEl, editableDiv.firstChild);
-
-      const tempRange = range.duplicate();
-      tempRange.moveToElementText(tempEl);
-      tempRange.setEndPoint("EndToEnd", range);
-      caretPos = tempRange.text.length;
-    }
+    preCaretTextRange.moveToElementText(element);
+    preCaretTextRange.setEndPoint("EndToEnd", textRange);
+    caretOffset = preCaretTextRange.text.length;
   }
 
-  return caretPos;
-};
+  return [node, caretOffset];
+}
+
+export default getCaretPosition;

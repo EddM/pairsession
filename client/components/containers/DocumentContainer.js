@@ -108,6 +108,10 @@ export default class DocumentContainer extends React.Component {
     const newContent = event.target.value;
     const operation = operationFromTextChange(document.contents, newContent);
 
+    if (operation.ops.length === 0) {
+      return;
+    }
+
     this.props.dispatch(receivedDocumentContents(newContent));
 
     if (status === DOCUMENT_STATUS.SYNC) {
