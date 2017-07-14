@@ -6,6 +6,8 @@ import getCaretPosition from '../src/getCaretPosition.js';
 export default class Document extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {};
   }
 
   componentWillReceiveProps(nextProps) {

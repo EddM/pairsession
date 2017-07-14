@@ -1,9 +1,10 @@
 module ApplicationCable
   class Connection < ActionCable::Connection::Base
-    identified_by :guid
+    identified_by :client_id
 
     def connect
-      self.guid = SecureRandom.uuid
+      reject_unauthorized_connection unless cookies[:client_id].present?
+      self.client_id = cookies[:client_id]
     end
   end
 end

@@ -35,6 +35,10 @@ export default class DocumentCable {
         // received an operation (update to the document)
         this.callbacks.receivedOperation(data);
         break;
+      case 'collaborator':
+        // received new info about a collaborator
+        this.callbacks.receivedCollaborator(data);
+        break;
     }
   }
 }

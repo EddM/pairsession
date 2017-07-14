@@ -1,19 +1,51 @@
 class DocumentChannel < ApplicationCable::Channel
+  attr_reader :client_id
+
   def subscribed
-    @client_id = SecureRandom.uuid
+    @client_id = connection.client_id
+
+    collaborator = Collaborator.new(@client_id)
+    collaborator.active!
+
+    document = Document.new("foo")
+    document.collaborators << collaborator
+
+    ActionCable.server.broadcast "documents.#{document.name}.collaborators", action: "collaborator", collaborator: {
+      id: collaborator.client_id,
+      alias: collaborator.client_alias,
+      status: collaborator.status
+    }
 
     # tell the client that we successfully subscribed them to this document
     transmit action: "subscribed", client_id: @client_id
+  end
+
+  def unsubscribed
+    document = Document.new("foo")
+
+    collaborator = Collaborator.new(@client_id)
+    collaborator.inactive!
+
+    ActionCable.server.broadcast "documents.#{document.name}.collaborators", action: "collaborator", collaborator: {
+      id: collaborator.client_id,
+      alias: collaborator.client_alias,
+      status: collaborator.status
+    }
   end
 
   def document(data)
     document = Document.new("foo")
 
     # send current document state
-    transmit action: "document", contents: document.value
+    transmit action: "document",
+             document: {
+               contents: document.value,
+               collaborators: document.collaborators.to_h
+             }
 
     # stream all document operations to the client
     stream_from "documents.#{document.name}.operations"
+    stream_from "documents.#{document.name}.collaborators"
   end
 
   def operation(data)

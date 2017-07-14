@@ -5,8 +5,9 @@ class Document # < ApplicationRecord
   attr_reader :name, :value
 
   def initialize(name)
+    @name = name
     @connection = Redis.new
-    @key = "f_#{name}"
+    @key = "documents:#{name}"
     set_value
     save!
   end
@@ -24,6 +25,10 @@ class Document # < ApplicationRecord
 
   def set_value
     @value = @connection.get(@key) || 'hello, world'
+  end
+
+  def collaborators
+    CollaboratorSet.new(name)
   end
 
   private

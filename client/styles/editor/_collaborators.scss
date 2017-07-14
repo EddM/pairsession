@@ -1,0 +1,50 @@
+.collaborator-list {
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.collaborator {
+  $dot-size: 9px;
+
+  position: relative;
+  padding-left: $dot-size + 8px;
+
+  &.active, &.self {
+    &:before {
+      content: "";
+      display: block;
+      float: left;
+      width: $dot-size;
+      height: $dot-size;
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    &:after {
+      padding: 0 4px;
+      line-height: 18px;
+      border-radius: 2px;
+      position: absolute;
+      right: 0;
+      background: $grey;
+      color: #fff;
+    }
+  }
+
+  &.active {
+    &:before, &:after { background: $pink; }
+    &:after { content: "Here"; }
+  }
+
+  &.self {
+    &:before, &:after { background: $green; }
+    &:after { content: "You"; }
+  }
+
+  &.inactive { opacity: 0.5; }
+}

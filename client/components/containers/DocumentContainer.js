@@ -3,9 +3,11 @@ import ot from 'ot';
 
 import DocumentCable from '../../src/DocumentCable.js'
 import Document from '../Document.js';
+import Sidebar from '../Sidebar.js';
+import CollaboratorList from '../CollaboratorList.js';
 
 import operationFromTextChange from '../../src/operationFromTextChange.js';
-import { receivedDocumentContents, receivedClientID } from '../../actions';
+import { receivedDocument, receivedClientID, receivedCollaborator } from '../../actions';
 
 const DOCUMENT_STATUS = {
   SYNC: "SYNC",
@@ -23,9 +25,10 @@ export default class DocumentContainer extends React.Component {
     };
 
     this.cable = new DocumentCable('foo', {
-      subscribedToDocument: this.subscribedToDocument.bind(this),
-      receivedDocument: this.receivedDocument.bind(this),
+      subscribedToDocument: (data) => this.props.dispatch(receivedClientID(data.client_id)),
+      receivedDocument: (data) => this.props.dispatch(receivedDocument(data.document)),
       receivedOperation: this.receivedOperation.bind(this),
+      receivedCollaborator: (data) => this.props.dispatch(receivedCollaborator(data.collaborator)),
     });
 
     this.handleInput = this.handleInput.bind(this);
@@ -37,18 +40,10 @@ export default class DocumentContainer extends React.Component {
     this.setState({ document: nextProps.document });
   }
 
-  subscribedToDocument(data) {
-    this.props.dispatch(receivedClientID(data.client_id));
-  }
-
-  receivedDocument(data) {
-    this.props.dispatch(receivedDocumentContents(data.contents));
-  }
-
   receivedOperation(data) {
     const operation = ot.TextOperation.fromJSON(data.operation);
 
-    if (data.client_id != this.state.document.clientID) {
+    if (data.client_id != this.props.clientID) {
       // if this operation was by someone else
       this.receivedRemoteOperation(operation);
     } else {
@@ -77,7 +72,12 @@ export default class DocumentContainer extends React.Component {
       }
     }
 
-    this.props.dispatch(receivedDocumentContents(operation.apply(document.contents)));
+    const newDocument = {
+      ...document,
+      contents: operation.apply(document.contents)
+    };
+
+    this.props.dispatch(receivedDocument(newDocument));
   }
 
   receivedLocalOperation(operation) {
@@ -85,7 +85,7 @@ export default class DocumentContainer extends React.Component {
 
     if (status === DOCUMENT_STATUS.WAITING_FOR_ACK_WITH_BUFFER) {
       // send whats currently in our buffer
-      this.cable.perform("operation", { client_id: document.clientID, operation: buffer });
+      this.cable.perform("operation", { client_id: this.props.clientID, operation: buffer });
 
       // clear the current buffer, and set state to reflect that we're waiting for acknowledgment of the
       // previously buffered operations
@@ -112,11 +112,16 @@ export default class DocumentContainer extends React.Component {
       return;
     }
 
-    this.props.dispatch(receivedDocumentContents(newContent));
+    const newDocument = {
+      ...document,
+      contents: newContent,
+    };
+
+    this.props.dispatch(receivedDocument(newDocument));
 
     if (status === DOCUMENT_STATUS.SYNC) {
       // send this new operation to the server
-      this.cable.perform("operation", { client_id: document.clientID, operation: operation });
+      this.cable.perform("operation", { client_id: this.props.clientID, operation: operation });
 
       // set state to reflect the fact that we're now waiting for acknowledgment of this operation
       this.setState({
@@ -136,6 +141,14 @@ export default class DocumentContainer extends React.Component {
   }
 
   render() {
-    return <Document {...this.props} handleInput={this.handleInput} ref={doc => this.document = doc} />;
+    return (
+      <div>
+        <Document {...this.props} handleInput={this.handleInput} ref={doc => this.document = doc} />
+
+        <Sidebar>
+          <CollaboratorList collaborators={this.props.document.collaborators} clientID={this.props.clientID} />
+        </Sidebar>
+      </div>
+    );
   }
 }

@@ -1,26 +1,32 @@
 const initialState = {
+  clientID: null,
   document: {
     contents: "",
-    clientID: null,
+    collaborators: {}
   }
 };
 
 const reducers = (state = initialState, action) => {
   switch (action.type) {
-    case 'DOCUMENT_RECEIVED_CONTENTS':
+    case 'DOCUMENT_RECEIVED':
       return {
         ...state,
-        document: {
-          ...state.document,
-          contents: action.contents,
-        }
+        document: action.document,
       };
     case 'CLIENT_ID_RECEIVED':
       return {
         ...state,
+        clientID: action.clientID,
+      }
+    case 'COLLABORATOR_RECEIVED':
+      return {
+        ...state,
         document: {
           ...state.document,
-          clientID: action.clientID,
+          collaborators: {
+            ...state.document.collaborators,
+            [action.collaborator.id]: action.collaborator
+          }
         }
       }
     default:
