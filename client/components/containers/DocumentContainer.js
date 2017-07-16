@@ -2,7 +2,7 @@ import React from 'react';
 import ot from 'ot';
 
 import DocumentCable from '../../src/DocumentCable.js'
-import Document from '../Document.js';
+import DocumentEditor from '../DocumentEditor.js';
 import Sidebar from '../Sidebar.js';
 import CollaboratorList from '../CollaboratorList.js';
 
@@ -143,7 +143,7 @@ export default class DocumentContainer extends React.Component {
   render() {
     return (
       <div>
-        <Document {...this.props} handleInput={this.handleInput} ref={doc => this.document = doc} />
+        <DocumentEditor {...this.props} handleInput={this.handleInput} ref={doc => this.document = doc} />
 
         <Sidebar>
           <CollaboratorList collaborators={this.props.document.collaborators} clientID={this.props.clientID} />

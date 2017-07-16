@@ -2,11 +2,11 @@ import React from 'react';
 import ContentEditable from 'react-contenteditable';
 import hljs from 'highlightjs';
 import striptags from 'striptags';
-import { unescape } from 'underscore';
+import { map, range, unescape } from 'underscore';
 
 import { restoreSelection, saveSelection } from '../src/getCaretPosition.js';
 
-export default class Document extends React.Component {
+export default class DocumentEditor extends React.Component {
   constructor(props) {
     super(props);
 
@@ -51,15 +51,25 @@ export default class Document extends React.Component {
     // }
   }
 
+  renderLineNumbers(content) {
+    const lines = range(1, content.split("\n").length);
+
+    return map(lines, (line) => <span key={`line${line}`} className="line-number">{line}</span>);
+  }
+
   render() {
     // highlight the code
-    const highlightedContents = hljs.highlight('sql', this.props.document.contents);
+    const highlightedContents = hljs.highlight('ruby', this.props.document.contents);
 
     // convert any html entities the above highlighter has added
     const formattedContents = unescape(highlightedContents.value);
 
     return (
       <div className='document-editor-container'>
+        <div className='line-numbers'>
+          {this.renderLineNumbers(formattedContents)}
+        </div>
+
         <pre className='document-editor'>
           <ContentEditable
             tagName='code'
