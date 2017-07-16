@@ -60,4 +60,16 @@ class DocumentChannel < ApplicationCable::Channel
     # broadcast the change to all subscribed
     ActionCable.server.broadcast "documents.#{document.name}.operations", data
   end
+
+  def collaborator(data)
+    document = Document.new("foo")
+    collaborator = Collaborator.new(@client_id)
+    collaborator.set_alias! data["alias"] if data["alias"].size >= 3
+
+    ActionCable.server.broadcast "documents.#{document.name}.collaborators", action: "collaborator", collaborator: {
+      id: collaborator.client_id,
+      alias: collaborator.client_alias,
+      status: collaborator.status
+    }
+  end
 end

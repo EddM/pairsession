@@ -7,8 +7,7 @@ class Collaborator
     @key = "collaborators:#{@client_id}"
 
     unless @client_alias = @connection.hget(@key, "alias")
-      @client_alias = self.class.random_alias
-      @connection.hmset @key, "alias", @client_alias
+      set_alias! self.class.random_alias
     end
 
     unless @status = @connection.hget(@key, "status")
@@ -27,7 +26,12 @@ class Collaborator
     @connection.hmset @key, "status", @status
   end
 
+  def set_alias!(new_alias)
+    @connection.hmset @key, "alias", new_alias
+    @client_alias = new_alias
+  end
+
   def self.random_alias
-    "user-#{rand(1000)}"
+    "Coder_#{SecureRandom.hex(4)}"
   end
 end

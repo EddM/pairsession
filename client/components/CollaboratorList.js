@@ -6,19 +6,26 @@ import Collaborator from './Collaborator.js';
 export default class CollaboratorList extends React.Component {
   constructor(props) {
     super(props);
+
+    this.setAlias = this.setAlias.bind(this);
+  }
+
+  setAlias(newAlias) {
+    this.props.cable.perform("collaborator", { client_id: this.props.clientID, alias: newAlias });
   }
 
   render() {
-    let collaborators = sortBy(this.props.collaborators, (collaborator) => {
-      return collaborator.status;
-    });
+    let collaborators = sortBy(this.props.collaborators, (collaborator) => collaborator.status);
 
     collaborators = map(collaborators, (collaborator, index) => {
+      const isSelf = collaborator.id === this.props.clientID;
+
       const component = <Collaborator
                           key={`collaborator${index}`}
                           name={collaborator.alias}
                           active={collaborator.status === 'active'}
-                          self={collaborator.id === this.props.clientID}
+                          self={isSelf}
+                          setAlias={isSelf ? this.setAlias : undefined}
                         />;
 
       return component;

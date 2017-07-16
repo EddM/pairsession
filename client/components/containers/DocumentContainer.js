@@ -146,7 +146,12 @@ export default class DocumentContainer extends React.Component {
         <DocumentEditor {...this.props} handleInput={this.handleInput} ref={doc => this.document = doc} />
 
         <Sidebar>
-          <CollaboratorList collaborators={this.props.document.collaborators} clientID={this.props.clientID} />
+          <CollaboratorList
+            cable={this.cable}
+            collaborators={this.props.document.collaborators}
+            clientID={this.props.clientID}
+            dispatch={this.props.dispatch}
+          />
         </Sidebar>
       </div>
     );
