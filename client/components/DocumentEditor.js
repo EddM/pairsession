@@ -52,9 +52,10 @@ export default class DocumentEditor extends React.Component {
   }
 
   renderLineNumbers(content) {
-    const lines = range(1, content.split("\n").length);
+    const numberOfLines = content.split("\n").length;
+    const lineNumbers = range(1, numberOfLines <= 1 ? 2 : numberOfLines);
 
-    return map(lines, (line) => <span key={`line${line}`} className="line-number">{line}</span>);
+    return map(lineNumbers, (line) => <span key={`line${line}`} className="line-number">{line}</span>);
   }
 
   render() {
