@@ -5,13 +5,20 @@
   min-height: 100vh;
   float: left;
   box-sizing: border-box;
+
+  [contenteditable] { outline: none; }
 }
 
 .document-editor {
   background: $dark-2;
   padding: $spacing;
   color: #fff;
-  outline: none;
+}
+
+.document-editor-content {
+  display: inline-block;
+  width: 100%;
 }
 
 @import "editor/_collaborators";
+@import "themes/monokai";

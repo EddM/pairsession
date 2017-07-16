@@ -1,23 +1,77 @@
-const getCaretPosition = (element) => {
-  let caretOffset = 0;
-  let node = null;
+import rangy from 'rangy';
 
-  if (typeof window.getSelection != "undefined" && window.getSelection().rangeCount > 0) {
-    const range = window.getSelection().getRangeAt(0);
-    const preCaretRange = range.cloneRange();
+const saveSelection = (containerEl) => {
+  var charIndex = 0, start = 0, end = 0, foundStart = false, stop = {};
+  var sel = rangy.getSelection(), range;
 
-    caretOffset = range.endOffset;
-    node = range.commonAncestorContainer;
-  } else if (typeof document.selection != "undefined" && document.selection.type != "Control") {
-    const textRange = document.selection.createRange();
-    const preCaretTextRange = document.body.createTextRange();
+  function traverseTextNodes(node, range) {
+    if (node.nodeType == 3) {
+      if (!foundStart && node == range.startContainer) {
+        start = charIndex + range.startOffset;
+        foundStart = true;
+      }
 
-    preCaretTextRange.moveToElementText(element);
-    preCaretTextRange.setEndPoint("EndToEnd", textRange);
-    caretOffset = preCaretTextRange.text.length;
+      if (foundStart && node == range.endContainer) {
+        end = charIndex + range.endOffset;
+        throw stop;
+      }
+
+      charIndex += node.length;
+    } else {
+      for (var i = 0, len = node.childNodes.length; i < len; ++i) {
+        traverseTextNodes(node.childNodes[i], range);
+      }
+    }
   }
 
-  return [node, caretOffset];
+  if (sel.rangeCount) {
+    try {
+      traverseTextNodes(containerEl, sel.getRangeAt(0));
+    } catch (ex) {
+      if (ex != stop) {
+        throw ex;
+      }
+    }
+  }
+
+  return { start, end };
 }
 
-export default getCaretPosition;
+const restoreSelection = (containerEl, savedSel) => {
+  var charIndex = 0, range = rangy.createRange(), foundStart = false, stop = {};
+  range.collapseToPoint(containerEl, 0);
+
+  function traverseTextNodes(node) {
+    if (node.nodeType == 3) {
+      var nextCharIndex = charIndex + node.length;
+
+      if (!foundStart && savedSel.start >= charIndex && savedSel.start <= nextCharIndex) {
+        range.setStart(node, savedSel.start - charIndex);
+        foundStart = true;
+      }
+
+      if (foundStart && savedSel.end >= charIndex && savedSel.end <= nextCharIndex) {
+        range.setEnd(node, savedSel.end - charIndex);
+        throw stop;
+      }
+
+      charIndex = nextCharIndex;
+    } else {
+      for (var i = 0, len = node.childNodes.length; i < len; ++i) {
+        traverseTextNodes(node.childNodes[i]);
+      }
+    }
+  }
+
+  try {
+    traverseTextNodes(containerEl);
+  } catch (ex) {
+    if (ex == stop) {
+      rangy.getSelection().setSingleRange(range);
+    } else {
+      throw ex;
+    }
+  }
+}
+
+export { restoreSelection, saveSelection };
