@@ -85,7 +85,7 @@ export default class DocumentContainer extends React.Component {
 
     if (status === DOCUMENT_STATUS.WAITING_FOR_ACK_WITH_BUFFER) {
       // send whats currently in our buffer
-      this.cable.perform("operation", { client_id: this.props.clientID, operation: buffer });
+      this.cable.performOperation(buffer, this.props.clientID);
 
       // clear the current buffer, and set state to reflect that we're waiting for acknowledgment of the
       // previously buffered operations
@@ -121,7 +121,7 @@ export default class DocumentContainer extends React.Component {
 
     if (status === DOCUMENT_STATUS.SYNC) {
       // send this new operation to the server
-      this.cable.perform("operation", { client_id: this.props.clientID, operation: operation });
+      this.cable.performOperation(operation, this.props.clientID);
 
       // set state to reflect the fact that we're now waiting for acknowledgment of this operation
       this.setState({

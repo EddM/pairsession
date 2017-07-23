@@ -6,6 +6,7 @@ class CreateOperations < ActiveRecord::Migration[5.1]
       t.text :body
       t.integer :base_length
       t.integer :target_length
+      t.integer :client_version, null: false
       t.timestamp :created_at
     end
   end

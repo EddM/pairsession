@@ -6,7 +6,8 @@ export default class DocumentCable {
   constructor(documentName, callbacks) {
     this.documentName = documentName;
     this.callbacks = callbacks;
-    this.cable = ActionCable.createConsumer('ws://localhost:3000/cable')
+    this.cable = ActionCable.createConsumer('ws://localhost:3000/cable');
+    this.clientVersion = 0;
 
     this.subscription = this.cable.subscriptions.create({ channel: CHANNEL_NAME, document_name: this.documentName }, {
       connected: this.connected.bind(this),
@@ -16,6 +17,16 @@ export default class DocumentCable {
 
   perform(action, params) {
     this.subscription.perform(action, params);
+  }
+
+  performOperation(operation, clientID) {
+    this.clientVersion++;
+
+    this.subscription.perform('operation', {
+      client_id: clientID,
+      operation: operation,
+      client_version: this.clientVersion,
+    });
   }
 
   connected(data) {
@@ -35,6 +46,7 @@ export default class DocumentCable {
         break;
       case 'operation':
         // received an operation (update to the document)
+        this.clientVersion = data.version;
         this.callbacks.receivedOperation(data);
         break;
       case 'collaborator':

@@ -24,6 +24,7 @@ ActiveRecord::Schema.define(version: 20170723204000) do
   create_table "documents", force: :cascade do |t|
     t.string "name"
     t.text "body"
+    t.integer "version", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -34,6 +35,7 @@ ActiveRecord::Schema.define(version: 20170723204000) do
     t.text "body"
     t.integer "base_length"
     t.integer "target_length"
+    t.integer "client_version", null: false
     t.datetime "created_at"
     t.index ["collaborator_id"], name: "index_operations_on_collaborator_id"
     t.index ["document_id"], name: "index_operations_on_document_id"

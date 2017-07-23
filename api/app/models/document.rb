@@ -8,18 +8,35 @@ class Document < ApplicationRecord
     record.body ||= DEFAULT_BODY
   end
 
-  def apply_operation(op)
-    transaction do
-      operations.create body: op.ops.to_json,
-                        base_length: op.base_length,
-                        target_length: op.target_length
+  def apply_operation(operation, client_version)
+    unless client_version > version
+      operation = transform_old_operation(operation, client_version)
+    end
 
-      self.body = op.apply(body)
+    transaction do
+      operations.create body: operation.ops.to_json,
+                        base_length: operation.base_length,
+                        target_length: operation.target_length,
+                        client_version: client_version
+
+      self.body = operation.apply(body)
       save
     end
+
+    operation
   end
 
   def size
     body.size
+  end
+
+  private
+
+  def transform_old_operation(operation, client_version)
+    operations.where("version > ?", client_version).find_each do |other_operation|
+      operation = OT::TextOperation.transform(operation, other_operation).first
+    end
+
+    operation
   end
 end

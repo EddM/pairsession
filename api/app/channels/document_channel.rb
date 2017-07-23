@@ -43,7 +43,11 @@ class DocumentChannel < ApplicationCable::Channel
       }]
     end.to_h
 
-    transmit action: "document", document: { contents: document.body, collaborators: collaborators }
+    transmit action: "document", document: {
+      contents: document.body,
+      collaborators: collaborators,
+      version: document.version
+    }
 
     # stream all document operations to the client
     stream_from "documents.#{document.name}.operations"
@@ -54,11 +58,17 @@ class DocumentChannel < ApplicationCable::Channel
     # turn the serialized operation into an operation object
     data = ActiveSupport::HashWithIndifferentAccess.new(data)
     operation = OT::TextOperation.from_a(data[:operation])
+    client_version = data[:client_version]
 
     # apply it to the document
-    if document.apply_operation(operation)
+    if document.apply_operation(operation, client_version)
       # broadcast the change to all subscribed
-      ActionCable.server.broadcast "documents.#{document.name}.operations", data
+      ActionCable.server.broadcast "documents.#{document.name}.operations", {
+        action: "operation",
+        operation: operation.to_a,
+        version: client_version,
+        client_id: data[:client_id]
+      }
     else
       # handle error
     end
