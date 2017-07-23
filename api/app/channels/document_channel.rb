@@ -35,8 +35,8 @@ class DocumentChannel < ApplicationCable::Channel
 
   def document_data(data)
     # send current document state
-    collaborators = document.collaborators.map do |c|
-      [c.client_id, {
+    collaborators = document.collaborators.map do |collaborator|
+      [collaborator.client_id, {
         id: collaborator.client_id,
         alias: collaborator.client_alias,
         status: collaborator.status
