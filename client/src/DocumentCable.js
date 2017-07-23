@@ -1,12 +1,14 @@
 import ActionCable from 'actioncable';
 
+const CHANNEL_NAME = 'DocumentChannel';
+
 export default class DocumentCable {
   constructor(documentName, callbacks) {
     this.documentName = documentName;
     this.callbacks = callbacks;
     this.cable = ActionCable.createConsumer('ws://localhost:3000/cable')
 
-    this.subscription = this.cable.subscriptions.create({ channel: 'DocumentChannel', name: 'foo' }, {
+    this.subscription = this.cable.subscriptions.create({ channel: CHANNEL_NAME, document_name: this.documentName }, {
       connected: this.connected.bind(this),
       received: this.received.bind(this),
     });
@@ -18,7 +20,7 @@ export default class DocumentCable {
 
   connected(data) {
     // we're connected, so lets download the full current state of the document
-    this.subscription.perform('document');
+    this.subscription.perform('document_data');
   }
 
   received(data) {

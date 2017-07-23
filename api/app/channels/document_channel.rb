@@ -1,29 +1,29 @@
 class DocumentChannel < ApplicationCable::Channel
-  attr_reader :client_id
+  attr_reader :document, :collaborator, :client_id
 
   def subscribed
     @client_id = connection.client_id
 
-    collaborator = Collaborator.new(@client_id)
-    collaborator.active!
+    @document = Document.find_or_create_by(name: params[:document_name])
+    @collaborator = document.collaborators.find_or_create_by(client_id: client_id)
 
-    document = Document.new("foo")
-    document.collaborators << collaborator
+    if collaborator.valid?
+      collaborator.active!
 
-    ActionCable.server.broadcast "documents.#{document.name}.collaborators", action: "collaborator", collaborator: {
-      id: collaborator.client_id,
-      alias: collaborator.client_alias,
-      status: collaborator.status
-    }
+      ActionCable.server.broadcast "documents.#{document.name}.collaborators", action: "collaborator", collaborator: {
+        id: collaborator.client_id,
+        alias: collaborator.client_alias,
+        status: collaborator.status
+      }
 
-    # tell the client that we successfully subscribed them to this document
-    transmit action: "subscribed", client_id: @client_id
+      # tell the client that we successfully subscribed them to this document
+      transmit action: "subscribed", client_id: client_id
+    else
+      # handle error
+    end
   end
 
   def unsubscribed
-    document = Document.new("foo")
-
-    collaborator = Collaborator.new(@client_id)
     collaborator.inactive!
 
     ActionCable.server.broadcast "documents.#{document.name}.collaborators", action: "collaborator", collaborator: {
@@ -33,15 +33,17 @@ class DocumentChannel < ApplicationCable::Channel
     }
   end
 
-  def document(data)
-    document = Document.new("foo")
-
+  def document_data(data)
     # send current document state
-    transmit action: "document",
-             document: {
-               contents: document.value,
-               collaborators: document.collaborators.to_h
-             }
+    collaborators = document.collaborators.map do |c|
+      [c.client_id, {
+        id: collaborator.client_id,
+        alias: collaborator.client_alias,
+        status: collaborator.status
+      }]
+    end.to_h
+
+    transmit action: "document", document: { contents: document.body, collaborators: collaborators }
 
     # stream all document operations to the client
     stream_from "documents.#{document.name}.operations"
@@ -54,17 +56,18 @@ class DocumentChannel < ApplicationCable::Channel
     operation = OT::TextOperation.from_a(data[:operation])
 
     # apply it to the document
-    document = Document.new("foo")
-    document.apply_operation operation
-
-    # broadcast the change to all subscribed
-    ActionCable.server.broadcast "documents.#{document.name}.operations", data
+    if document.apply_operation(operation)
+      # broadcast the change to all subscribed
+      ActionCable.server.broadcast "documents.#{document.name}.operations", data
+    else
+      # handle error
+    end
   end
 
-  def collaborator(data)
-    document = Document.new("foo")
-    collaborator = Collaborator.new(@client_id)
-    collaborator.set_alias! data["alias"] if data["alias"].size >= 3
+  def update_collaborator(data)
+    return unless data["alias"].size >= 3 # TODO: move to model validation
+
+    collaborator.update client_alias: data["alias"]
 
     ActionCable.server.broadcast "documents.#{document.name}.collaborators", action: "collaborator", collaborator: {
       id: collaborator.client_id,

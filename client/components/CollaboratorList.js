@@ -11,7 +11,7 @@ export default class CollaboratorList extends React.Component {
   }
 
   setAlias(newAlias) {
-    this.props.cable.perform("collaborator", { client_id: this.props.clientID, alias: newAlias });
+    this.props.cable.perform('update_collaborator', { client_id: this.props.clientID, alias: newAlias });
   }
 
   render() {

@@ -9,7 +9,6 @@ gem 'rails', '~> 5.1.2'
 gem 'sqlite3'
 gem 'puma', '~> 3.7'
 
-gem 'redis'
 gem 'ot'
 
 group :development, :test do

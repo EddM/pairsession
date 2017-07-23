@@ -1,39 +1,25 @@
-require 'redis'
+class Document < ApplicationRecord
+  DEFAULT_BODY = "hello, world!"
 
-# Represents a document
-class Document # < ApplicationRecord
-  attr_reader :name, :value
+  has_many :collaborators
+  has_many :operations
 
-  def initialize(name)
-    @name = name
-    @connection = Redis.new
-    @key = "documents:#{name}"
-    set_value
-    save!
+  before_create do |record|
+    record.body ||= DEFAULT_BODY
   end
 
   def apply_operation(op)
-    @value = op.apply(@value)
-    save!
+    transaction do
+      operations.create body: op.ops.to_json,
+                        base_length: op.base_length,
+                        target_length: op.target_length
 
-    @value
+      self.body = op.apply(body)
+      save
+    end
   end
 
   def size
-    @value.size
-  end
-
-  def set_value
-    @value = @connection.get(@key) || 'hello, world'
-  end
-
-  def collaborators
-    CollaboratorSet.new(name)
-  end
-
-  private
-
-  def save!
-    @connection.set @key, @value
+    body.size
   end
 end

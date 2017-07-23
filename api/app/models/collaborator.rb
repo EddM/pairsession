@@ -1,34 +1,18 @@
-class Collaborator
-  attr_reader :client_id, :client_alias, :status
+class Collaborator < ApplicationRecord
+  belongs_to :document
 
-  def initialize(client_id)
-    @client_id = client_id
-    @connection = Redis.new
-    @key = "collaborators:#{@client_id}"
-
-    unless @client_alias = @connection.hget(@key, "alias")
-      set_alias! self.class.random_alias
-    end
-
-    unless @status = @connection.hget(@key, "status")
-      @status = :active
-      @connection.hmset @key, "status", @status
-    end
+  before_create do |record|
+    record.client_alias ||= Collaborator.random_alias
   end
 
   def active!
-    @status = :active
-    @connection.hmset @key, "status", @status
+    self.status = "active"
+    save
   end
 
   def inactive!
-    @status = :inactive
-    @connection.hmset @key, "status", @status
-  end
-
-  def set_alias!(new_alias)
-    @connection.hmset @key, "alias", new_alias
-    @client_alias = new_alias
+    self.status = "inactive"
+    save
   end
 
   def self.random_alias
