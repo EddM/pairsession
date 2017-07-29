@@ -1,11 +1,9 @@
 class Document < ApplicationRecord
-  DEFAULT_BODY = "hello, world!"
-
   has_many :collaborators
   has_many :operations
 
   before_create do |record|
-    record.body ||= DEFAULT_BODY
+    record.name ||= self.class.generate_name
   end
 
   def apply_operation(operation, client_version)
@@ -38,5 +36,9 @@ class Document < ApplicationRecord
     end
 
     operation
+  end
+
+  def self.generate_name
+    SecureRandom.hex(8)
   end
 end
