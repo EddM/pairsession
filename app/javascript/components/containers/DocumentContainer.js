@@ -3,6 +3,7 @@ import ot from 'ot';
 
 import DocumentCable from '../../src/DocumentCable.js'
 import DocumentEditor from '../DocumentEditor.js';
+import DocumentOptions from '../DocumentOptions.js';
 import Sidebar from '../Sidebar.js';
 import CollaboratorList from '../CollaboratorList.js';
 
@@ -22,6 +23,9 @@ export default class DocumentContainer extends React.Component {
     this.state = {
       status: DOCUMENT_STATUS.SYNC,
       document: props.document,
+      documentOptions: {
+        syntaxMode: null,
+      }
     };
 
     this.cable = new DocumentCable(props.document.name, {
@@ -34,6 +38,7 @@ export default class DocumentContainer extends React.Component {
     this.handleInput = this.handleInput.bind(this);
     this.receivedRemoteOperation = this.receivedRemoteOperation.bind(this);
     this.receivedLocalOperation = this.receivedLocalOperation.bind(this);
+    this.syntaxModeChanged = this.syntaxModeChanged.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -140,17 +145,35 @@ export default class DocumentContainer extends React.Component {
     }
   }
 
+  syntaxModeChanged(syntaxMode) {
+    this.setState({
+      documentOptions: { syntaxMode }
+    })
+  }
+
   render() {
+    const { document, clientID, dispatch } = this.props;
+    const { documentOptions } = this.state;
+
     return (
       <div>
-        <DocumentEditor {...this.props} handleInput={this.handleInput} ref={doc => this.document = doc} />
+        <DocumentEditor
+          {...this.props}
+          documentOptions={documentOptions}
+          handleInput={this.handleInput}
+          ref={doc => this.document = doc}
+        />
 
         <Sidebar>
           <CollaboratorList
             cable={this.cable}
-            collaborators={this.props.document.collaborators}
-            clientID={this.props.clientID}
-            dispatch={this.props.dispatch}
+            collaborators={document.collaborators}
+            clientID={clientID}
+            dispatch={dispatch}
+          />
+
+          <DocumentOptions
+            syntaxModeChanged={this.syntaxModeChanged}
           />
         </Sidebar>
       </div>

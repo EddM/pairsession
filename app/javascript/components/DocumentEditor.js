@@ -59,16 +59,25 @@ export default class DocumentEditor extends React.Component {
   }
 
   render() {
-    // highlight the code
-    const highlightedContents = hljs.highlight('ruby', this.props.document.body);
+    let newContents;
 
-    // convert any html entities the above highlighter has added
-    const formattedContents = unescape(highlightedContents.value);
+    if (this.props.documentOptions.syntaxMode) {
+      // highlight the code
+      const highlightedContents = hljs.highlight(
+        this.props.documentOptions.syntaxMode,
+        this.props.document.body
+      );
+
+      // convert any html entities the above highlighter has added
+      newContents = unescape(highlightedContents.value);
+    } else {
+      newContents = this.props.document.body;
+    }
 
     return (
       <div className='document-editor-container'>
         <div className='line-numbers'>
-          {this.renderLineNumbers(formattedContents)}
+          {this.renderLineNumbers(newContents)}
         </div>
 
         <pre className='document-editor'>
@@ -78,7 +87,7 @@ export default class DocumentEditor extends React.Component {
             ref={editor => this.editor = editor}
             onChange={this.handleInput}
             onKeyDown={this.handleKeydown}
-            html={formattedContents}
+            html={newContents}
             spellCheck={false}
           />
         </pre>
