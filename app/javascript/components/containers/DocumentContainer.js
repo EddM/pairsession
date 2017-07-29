@@ -24,7 +24,7 @@ export default class DocumentContainer extends React.Component {
       document: props.document,
     };
 
-    this.cable = new DocumentCable('foo', {
+    this.cable = new DocumentCable(props.document.name, {
       subscribedToDocument: (data) => this.props.dispatch(receivedClientID(data.client_id)),
       receivedDocument: (data) => this.props.dispatch(receivedDocument(data.document)),
       receivedOperation: this.receivedOperation.bind(this),
@@ -74,7 +74,7 @@ export default class DocumentContainer extends React.Component {
 
     const newDocument = {
       ...document,
-      contents: operation.apply(document.contents)
+      body: operation.apply(document.body)
     };
 
     this.props.dispatch(receivedDocument(newDocument));
@@ -106,7 +106,7 @@ export default class DocumentContainer extends React.Component {
   handleInput(newContent) {
     const { status, document, buffer } = this.state;
     // const newContent = event.target.value;
-    const operation = operationFromTextChange(document.contents, newContent);
+    const operation = operationFromTextChange(document.body, newContent);
 
     if (operation.ops.length === 0) {
       return;
@@ -114,7 +114,7 @@ export default class DocumentContainer extends React.Component {
 
     const newDocument = {
       ...document,
-      contents: newContent,
+      body: newContent,
     };
 
     this.props.dispatch(receivedDocument(newDocument));

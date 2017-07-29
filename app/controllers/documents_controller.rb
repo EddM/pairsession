@@ -2,8 +2,11 @@
 
 class DocumentsController < ApplicationController
   def show
-    @document = Document.new(params[:id])
+    @document = Document.new(name: params[:id])
 
-    render json: @document
+    respond_to do |format|
+      format.html
+      format.json { render json: @document }
+    end
   end
 end

@@ -44,7 +44,7 @@ class DocumentChannel < ApplicationCable::Channel
     end.to_h
 
     transmit action: "document", document: {
-      contents: document.body,
+      body: document.body,
       collaborators: collaborators,
       version: document.version
     }

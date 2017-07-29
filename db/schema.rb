@@ -23,7 +23,7 @@ ActiveRecord::Schema.define(version: 20170723204000) do
 
   create_table "documents", force: :cascade do |t|
     t.string "name"
-    t.text "body"
+    t.text "body", default: "hello, world!", null: false
     t.integer "version", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

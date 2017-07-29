@@ -10,7 +10,7 @@ export default class DocumentEditor extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { content: props.document.contents };
+    this.state = { content: props.document.body };
     this.handleInput = this.handleInput.bind(this);
     this.handleKeydown = this.handleKeydown.bind(this);
   }
@@ -60,7 +60,7 @@ export default class DocumentEditor extends React.Component {
 
   render() {
     // highlight the code
-    const highlightedContents = hljs.highlight('ruby', this.props.document.contents);
+    const highlightedContents = hljs.highlight('ruby', this.props.document.body);
 
     // convert any html entities the above highlighter has added
     const formattedContents = unescape(highlightedContents.value);

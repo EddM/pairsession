@@ -1,7 +1,7 @@
 const initialState = {
   clientID: null,
   document: {
-    contents: "",
+    body: "",
     collaborators: {}
   }
 };
