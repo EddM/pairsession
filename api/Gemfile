@@ -5,10 +5,18 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
+# core
 gem 'rails', '~> 5.1.2'
 gem 'sqlite3'
 gem 'puma', '~> 3.7'
 
+# assets
+gem 'sprockets-rails'
+gem 'sass-rails'
+gem 'uglifier'
+gem 'webpacker', '~> 2.0'
+
+# document logic
 gem 'ot'
 
 group :development, :test do

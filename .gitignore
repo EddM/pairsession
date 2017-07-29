@@ -19,6 +19,7 @@ api/.byebug_history
 
 client/dist
 client/node_modules
+api/node_modules
 
 dump.rdb
 Procfile.development
