@@ -21,3 +21,5 @@ node_modules
 
 dump.rdb
 Procfile.development
+
+.env
