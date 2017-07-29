@@ -6,5 +6,4 @@ test:
 
 production:
   adapter: redis
-  url: redis://localhost:6379/1
-  channel_prefix: pairsession_production
+  url: <%= ENV["REDIS_URL"] %>
