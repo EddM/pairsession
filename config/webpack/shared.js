@@ -35,7 +35,11 @@ module.exports = {
   },
 
   plugins: [
-    new webpack.EnvironmentPlugin(JSON.parse(JSON.stringify(env)))
+    new webpack.EnvironmentPlugin(JSON.parse(JSON.stringify(env))),
+    new ManifestPlugin({
+      publicPath: output.publicPath,
+      writeToFileEmit: true
+    })
   ],
 
   resolve: {
