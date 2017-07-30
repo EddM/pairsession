@@ -19,14 +19,14 @@ class Document < ApplicationRecord
 
       new_body = operation.apply(body)
       update body: new_body
-      Rails.cache.write [self, :body], new_body
+      Rails.cache.write body_cache_key, new_body
     end
 
     operation
   end
 
   def body
-    Rails.cache.fetch [id, :body] do
+    Rails.cache.fetch body_cache_key do
       reload
       read_attribute :body
     end
@@ -37,6 +37,10 @@ class Document < ApplicationRecord
   end
 
   private
+
+  def body_cache_key
+    [id, :body]
+  end
 
   def transform_old_operation(operation, client_version)
     operations.where("version > ?", client_version).find_each do |other_operation|
