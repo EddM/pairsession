@@ -110,7 +110,6 @@ export default class DocumentContainer extends React.Component {
 
   handleInput(newContent) {
     const { status, document, buffer } = this.state;
-    // const newContent = event.target.value;
     const operation = operationFromTextChange(document.body, newContent);
 
     if (operation.ops.length === 0) {

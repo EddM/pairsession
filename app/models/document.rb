@@ -17,11 +17,19 @@ class Document < ApplicationRecord
                         target_length: operation.target_length,
                         client_version: client_version
 
-      self.body = operation.apply(body)
-      save
+      new_body = operation.apply(body)
+      update body: new_body
+      Rails.cache.write [self, :body], new_body
     end
 
     operation
+  end
+
+  def body
+    Rails.cache.fetch [self, :body] do
+      reload
+      read_attribute :body
+    end
   end
 
   def size
@@ -39,6 +47,6 @@ class Document < ApplicationRecord
   end
 
   def self.generate_name
-    SecureRandom.hex(8)
+    SecureRandom.hex(4)
   end
 end
