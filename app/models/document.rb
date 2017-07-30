@@ -46,7 +46,11 @@ class Document < ApplicationRecord
     operation
   end
 
-  def self.generate_name
-    SecureRandom.hex(4)
+  class << self
+    private
+
+    def generate_name
+      SecureRandom.hex(4)
+    end
   end
 end
