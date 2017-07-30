@@ -26,7 +26,7 @@ class Document < ApplicationRecord
   end
 
   def body
-    Rails.cache.fetch [self, :body] do
+    Rails.cache.fetch [id, :body] do
       reload
       read_attribute :body
     end
