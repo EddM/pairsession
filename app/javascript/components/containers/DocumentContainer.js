@@ -112,6 +112,8 @@ export default class DocumentContainer extends React.Component {
     const { status, document, buffer } = this.state;
     const operation = operationFromTextChange(document.body, newContent);
 
+    console.log('operation', operation);
+
     if (operation.ops.length === 0) {
       return;
     }

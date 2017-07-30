@@ -4,7 +4,7 @@ import hljs from 'highlightjs';
 import striptags from 'striptags';
 import { map, range, unescape } from 'underscore';
 
-import { restoreSelection, saveSelection } from '../src/getCaretPosition.js';
+import { restoreSelection, saveSelection } from '../src/CaretPosition.js';
 
 export default class DocumentEditor extends React.Component {
   constructor(props) {
