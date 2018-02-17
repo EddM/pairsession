@@ -8,6 +8,8 @@
   margin: ($spacing * 2) 0;
   text-align: right;
   cursor: default;
+  z-index: 5;
+  position: relative;
 
   &:hover { opacity: 0.8; }
 }

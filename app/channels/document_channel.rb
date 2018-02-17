@@ -78,11 +78,22 @@ class DocumentChannel < ApplicationCable::Channel
     return unless data["alias"].size >= 3 # TODO: move to model validation
 
     collaborator.update client_alias: data["alias"]
+    broadcast_collaborator
+  end
 
+  def update_caret_position(data)
+    collaborator.caret_position = [data["start"].to_i, data["end"].to_i]
+    broadcast_collaborator
+  end
+
+  private
+
+  def broadcast_collaborator
     ActionCable.server.broadcast "documents.#{document.name}.collaborators", action: "collaborator", collaborator: {
       id: collaborator.client_id,
       alias: collaborator.client_alias,
-      status: collaborator.status
+      status: collaborator.status,
+      caret_position: collaborator.caret_position
     }
   end
 end

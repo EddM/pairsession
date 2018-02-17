@@ -52,8 +52,14 @@ export default class DocumentContainer extends React.Component {
 
   setCaretPosition(element) {
     const caretPosition = saveSelection(element);
+    const oldCaretPosition = this.state.caretPosition;
 
-    this.setState({ caretPosition });
+    if (!oldCaretPosition ||
+        caretPosition.start != oldCaretPosition.start ||
+        caretPosition.end != oldCaretPosition.end) {
+      this.setState({ caretPosition });
+      this.cable.perform('update_caret_position', caretPosition);
+    }
   }
 
   restoreCaretPosition(element, caretPosition) {

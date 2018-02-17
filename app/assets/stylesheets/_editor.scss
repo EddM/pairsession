@@ -13,13 +13,34 @@
   background: $dark-2;
   padding: $spacing;
   color: #fff;
+  position: relative;
+}
+
+.editor-shadow, .document-editor-content {
+  display: inline-block;
+  width: 100%;
+}
+
+.document-editor-inner {
+  position: relative;
+}
+
+.editor-shadow {
+  z-index: 2;
+  color: rgba(0, 0, 0, 0%);
+  position: absolute;
+  top: 0;
+  pointer-events: none;
 }
 
 .document-editor-content {
   display: inline-block;
   width: 100%;
+  z-index: 1;
+  position: relative;
 }
 
 @import "editor/_collaborators";
 @import "editor/_line_numbers";
+@import "editor/_carets";
 @import "themes/monokai";

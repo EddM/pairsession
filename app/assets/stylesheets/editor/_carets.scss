@@ -1,0 +1,38 @@
+@keyframes caret-flicker {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.caret {
+  position: relative;
+
+  &:before {
+    content: attr(data-alias);
+    position: absolute;
+    font-size: 10px;
+    background: $pink;
+    color: black;
+    padding: 2px 4px;
+    line-height: 1;
+    top: -1rem;
+  }
+
+  &:after {
+    content: "";
+    display: inline-block;
+    width: 2px;
+    background: $pink;
+    position: absolute;
+    height: 1.3rem;
+    animation: caret-flicker 1000ms infinite;
+  }
+}

@@ -6,6 +6,7 @@ import { map, range, unescape } from 'underscore';
 
 const TAB_CHAR = " ";
 const TAB_SIZE = 2;
+const CARET_UPDATE_RATE = 200;
 
 export default class DocumentEditor extends React.Component {
   constructor(props) {
@@ -13,6 +14,10 @@ export default class DocumentEditor extends React.Component {
 
     this.handleInput = this.handleInput.bind(this);
     this.handleKeydown = this.handleKeydown.bind(this);
+    this.updateCaretPosition = this.updateCaretPosition.bind(this);
+
+    // periodically update about this user's caret position
+    setInterval(this.updateCaretPosition, CARET_UPDATE_RATE);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -33,12 +38,16 @@ export default class DocumentEditor extends React.Component {
     }
   }
 
+  updateCaretPosition() {
+    this.props.setCaretPosition(this.editor.htmlEl);
+  }
+
   getCurrentLine() {
     const { caretPosition, document } = this.props;
     const lineBreaks = document.body.substr(0, caretPosition.start + 1).match(/\n/g);
 
     if (!lineBreaks) {
-      return;
+      return '';
     }
 
     const lineNumber = lineBreaks.length - 1;
@@ -90,9 +99,36 @@ export default class DocumentEditor extends React.Component {
     return map(lineNumbers, line => <span key={`line${line}`} className="line-number">{line}</span>);
   }
 
+  renderCollaboratorPositions(content) {
+    const { document, clientID } = this.props;
+
+    if (!document.collaborators) {
+      return content;
+    }
+
+    const collaborators = Object.values(document.collaborators).filter(collaborator => collaborator.id !== clientID);
+
+    collaborators.forEach((collaborator) => {
+      let collaboratorPosition = [0, 0];
+
+      if (collaborator.caret_position) {
+        collaboratorPosition = collaborator.caret_position[0];
+      }
+
+      const head = content.slice(0, collaboratorPosition);
+      const tail = content.slice(collaboratorPosition);
+
+      content = `${head}<span class="caret" data-alias="${collaborator.alias}"></span>${tail}`
+    })
+
+    return content;
+  }
+
   render() {
     const { documentOptions, document } = this.props;
     let newContents;
+
+    const newContentsMarkedUp = this.renderCollaboratorPositions(document.body);
 
     if (documentOptions.syntaxMode) {
       // highlight the code
@@ -111,15 +147,19 @@ export default class DocumentEditor extends React.Component {
         </div>
 
         <pre className='document-editor'>
-          <ContentEditable
-            tagName='code'
-            className='document-editor-content'
-            ref={editor => this.editor = editor}
-            onChange={this.handleInput}
-            onKeyDown={this.handleKeydown}
-            html={newContents}
-            spellCheck={false}
-          />
+          <div className='document-editor-inner'>
+            <ContentEditable
+              tagName='code'
+              className='document-editor-content'
+              ref={editor => this.editor = editor}
+              onChange={this.handleInput}
+              onKeyDown={this.handleKeydown}
+              html={newContents}
+              spellCheck={false}
+            />
+
+            <div dangerouslySetInnerHTML={{ __html: newContentsMarkedUp }} className='editor-shadow' />
+          </div>
         </pre>
       </div>
     );
