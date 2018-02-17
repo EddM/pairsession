@@ -11,18 +11,29 @@ export default class DocumentOptions extends React.Component {
     this.props.syntaxModeChanged(event.target.value);
   }
 
+  renderOption(label, value) {
+    const { syntaxMode } = this.props;
+    let optionValue = value;
+
+    if (optionValue === null) {
+      optionValue = '';
+    }
+
+    return <option value={optionValue} selected={value == syntaxMode}>{label}</option>
+  }
+
   render() {
     return (
       <div className='document-options'>
         <h2>Options</h2>
 
         <select onChange={this.handleSyntaxModeChange}>
-          <option value=''>Plain Text</option>
-          <option value='ruby'>Ruby</option>
-          <option value='php'>PHP</option>
-          <option value='javascript'>JavaScript</option>
-          <option value='html'>HTML</option>
-          <option value='sql'>SQL</option>
+          {this.renderOption(null, 'Plain Text')}
+          {this.renderOption('Ruby', 'ruby')}
+          {this.renderOption('PHP', 'php')}
+          {this.renderOption('JavaScript', 'javascript')}
+          {this.renderOption('HTML', 'html')}
+          {this.renderOption('SQL', 'sql')}
         </select>
       </div>
     );

@@ -27,7 +27,7 @@ export default class DocumentContainer extends React.Component {
       document: props.document,
       caretPosition: null,
       documentOptions: {
-        syntaxMode: null,
+        syntaxMode: 'ruby',
       }
     };
 
@@ -198,6 +198,7 @@ export default class DocumentContainer extends React.Component {
 
           <DocumentOptions
             syntaxModeChanged={this.syntaxModeChanged}
+            syntaxMode={documentOptions.syntaxMode}
           />
         </Sidebar>
       </div>
