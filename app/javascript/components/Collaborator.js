@@ -5,6 +5,7 @@ import AliasInput from './AliasInput.js';
 export default class Collaborator extends React.Component {
   constructor(props) {
     super(props);
+
     this.state = { editingAlias: false };
 
     this.handleClick = this.handleClick.bind(this);
@@ -25,19 +26,16 @@ export default class Collaborator extends React.Component {
   }
 
   render() {
-    const activityClass = this.props.active ? 'active' : 'inactive';
-    const selfClass = this.props.self ? 'self' : '';
-    let content = null;
-
-    if (this.state.editingAlias) {
-      content = <AliasInput setAlias={this.setAlias} cancel={() => this.setState({ editingAlias: false })} />;
-    } else {
-      content = this.props.name;
-    }
+    const { active, self, name } = this.props;
+    const { editingAlias } = this.state;
+    const activityClass = active ? 'active' : 'inactive';
+    const selfClass = self ? 'self' : '';
 
     return (
       <li className={`collaborator ${activityClass} ${selfClass}`} onClick={this.handleClick}>
-        {content}
+        {editingAlias
+          ? <AliasInput setAlias={this.setAlias} cancel={() => this.setState({ editingAlias: false })} />
+          : name}
       </li>
     );
   }

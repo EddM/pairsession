@@ -87,10 +87,11 @@ export default class DocumentContainer extends React.Component {
 
   receivedLocalOperation(operation) {
     const { status, document, buffer } = this.state;
+    const { clientID } = this.props;
 
     if (status === DOCUMENT_STATUS.WAITING_FOR_ACK_WITH_BUFFER) {
       // send whats currently in our buffer
-      this.cable.performOperation(buffer, this.props.clientID);
+      this.cable.performOperation(buffer, clientID);
 
       // clear the current buffer, and set state to reflect that we're waiting for acknowledgment of the
       // previously buffered operations
@@ -111,8 +112,6 @@ export default class DocumentContainer extends React.Component {
   handleInput(newContent) {
     const { status, document, buffer } = this.state;
     const operation = operationFromTextChange(document.body, newContent);
-
-    console.log('operation', operation);
 
     if (operation.ops.length === 0) {
       return;

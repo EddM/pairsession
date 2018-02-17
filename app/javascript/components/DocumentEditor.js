@@ -6,6 +6,9 @@ import { map, range, unescape } from 'underscore';
 
 import { restoreSelection, saveSelection } from '../src/CaretPosition.js';
 
+const TAB_CHAR = " ";
+const TAB_SIZE = 2;
+
 export default class DocumentEditor extends React.Component {
   constructor(props) {
     super(props);
@@ -25,53 +28,83 @@ export default class DocumentEditor extends React.Component {
   }
 
   componentDidUpdate() {
-    if (this.state.caretPosition) {
-      restoreSelection(this.editor.htmlEl, this.state.caretPosition);
+    const { caretPosition } = this.state;
+
+    if (caretPosition) {
+      restoreSelection(this.editor.htmlEl, caretPosition);
     }
   }
 
+  getCurrentLine() {
+    const { body } = this.props.document;
+    const { caretPosition } = this.state;
+    const lineBreaks = body.substr(0, caretPosition.start + 1).match(/\n/g);
+
+    if (!lineBreaks) {
+      return;
+    }
+
+    const lineNumber = lineBreaks.length - 1;
+
+    return body.split(/\n/)[lineNumber < 0 ? 0 : lineNumber];
+  }
+
+  insertLineBreak() {
+    // insert line break, maintaining current tab level
+    let tabSize = 0;
+    const currentLine = this.getCurrentLine();
+    const indentMatch = currentLine.match(/^\s+/);
+
+    if (indentMatch) {
+      tabSize = indentMatch[0].length;
+    }
+
+    document.execCommand('insertText', false, `\n${TAB_CHAR.repeat(tabSize)}`);
+  }
+
   handleInput(event) {
+    const { target } = event;
+    const { handleInput } = this.props;
+
     // turn any divs inserted by the browser into simple plain text linebreaks
-    const value = event.target.value.
+    const value = target.value.
       replace(/<div>((.|\n)*)<\/div>/gi, "<br />$1").
       replace(/<br \/>/gi, "\n");
 
     // then pass this up the chain, stripping any remaining HTML
-    this.props.handleInput(striptags(value));
+    handleInput(striptags(value));
 
     return true;
   }
 
   handleKeydown(event) {
-    // if (event.keyCode === 13) {
-    //   // handle current tab level
-    //   document.execCommand('insertText', false, '\n')
-    //   document.execCommand('insertText', false, '  ')
-    //   event.preventDefault();
-    // }
+    const { keyCode } = event;
+
+    if (keyCode === 13) { // return
+      this.insertLineBreak();
+      event.preventDefault();
+    }
   }
 
   renderLineNumbers(content) {
     const numberOfLines = content.split("\n").length;
     const lineNumbers = range(1, numberOfLines <= 1 ? 2 : numberOfLines);
 
-    return map(lineNumbers, (line) => <span key={`line${line}`} className="line-number">{line}</span>);
+    return map(lineNumbers, line => <span key={`line${line}`} className="line-number">{line}</span>);
   }
 
   render() {
+    const { documentOptions, document } = this.props;
     let newContents;
 
-    if (this.props.documentOptions.syntaxMode) {
+    if (documentOptions.syntaxMode) {
       // highlight the code
-      const highlightedContents = hljs.highlight(
-        this.props.documentOptions.syntaxMode,
-        this.props.document.body
-      );
+      const highlightedContents = hljs.highlight(documentOptions.syntaxMode, document.body);
 
       // convert any html entities the above highlighter has added
       newContents = unescape(highlightedContents.value);
     } else {
-      newContents = this.props.document.body;
+      newContents = document.body;
     }
 
     return (
