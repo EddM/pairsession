@@ -106,7 +106,9 @@ export default class DocumentEditor extends React.Component {
       return content;
     }
 
-    const collaborators = Object.values(document.collaborators).filter(collaborator => collaborator.id !== clientID);
+    const collaborators = Object.values(document.collaborators).filter((collaborator) => {
+      return collaborator.id !== clientID && collaborator.status === 'active';
+    });
 
     collaborators.forEach((collaborator) => {
       let collaboratorPosition = [0, 0];
