@@ -4,8 +4,6 @@ import hljs from 'highlightjs';
 import striptags from 'striptags';
 import { map, range, unescape } from 'underscore';
 
-import { restoreSelection, saveSelection } from '../src/CaretPosition.js';
-
 const TAB_CHAR = " ";
 const TAB_SIZE = 2;
 
@@ -13,32 +11,31 @@ export default class DocumentEditor extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { content: props.document.body };
     this.handleInput = this.handleInput.bind(this);
     this.handleKeydown = this.handleKeydown.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
+    const { document, setCaretPosition } = this.props;
+
     // if the document object is being updated in any way
-    if (nextProps.document !== this.props.document) {
+    if (nextProps.document !== document && setCaretPosition) {
       // store the current cursor position, pre-update, so we can restore it after the update
-      const caretPosition = saveSelection(this.editor.htmlEl);
-      this.setState({ caretPosition });
+      setCaretPosition(this.editor.htmlEl);
     }
   }
 
   componentDidUpdate() {
-    const { caretPosition } = this.state;
+    const { caretPosition, restoreCaretPosition } = this.props;
 
     if (caretPosition) {
-      restoreSelection(this.editor.htmlEl, caretPosition);
+      restoreCaretPosition(this.editor.htmlEl, caretPosition);
     }
   }
 
   getCurrentLine() {
-    const { body } = this.props.document;
-    const { caretPosition } = this.state;
-    const lineBreaks = body.substr(0, caretPosition.start + 1).match(/\n/g);
+    const { caretPosition, document } = this.props;
+    const lineBreaks = document.body.substr(0, caretPosition.start + 1).match(/\n/g);
 
     if (!lineBreaks) {
       return;
@@ -46,7 +43,7 @@ export default class DocumentEditor extends React.Component {
 
     const lineNumber = lineBreaks.length - 1;
 
-    return body.split(/\n/)[lineNumber < 0 ? 0 : lineNumber];
+    return document.body.split(/\n/)[lineNumber < 0 ? 0 : lineNumber];
   }
 
   insertLineBreak() {

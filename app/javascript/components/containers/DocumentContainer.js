@@ -8,6 +8,8 @@ import Sidebar from '../Sidebar.js';
 import CollaboratorList from '../CollaboratorList.js';
 
 import operationFromTextChange from '../../src/operationFromTextChange.js';
+import { restoreSelection, saveSelection } from '../../src/CaretPosition.js';
+
 import { receivedDocument, receivedClientID, receivedCollaborator } from '../../actions';
 
 const DOCUMENT_STATUS = {
@@ -23,6 +25,7 @@ export default class DocumentContainer extends React.Component {
     this.state = {
       status: DOCUMENT_STATUS.SYNC,
       document: props.document,
+      caretPosition: null,
       documentOptions: {
         syntaxMode: null,
       }
@@ -39,10 +42,22 @@ export default class DocumentContainer extends React.Component {
     this.receivedRemoteOperation = this.receivedRemoteOperation.bind(this);
     this.receivedLocalOperation = this.receivedLocalOperation.bind(this);
     this.syntaxModeChanged = this.syntaxModeChanged.bind(this);
+    this.setCaretPosition = this.setCaretPosition.bind(this);
+    this.restoreCaretPosition = this.restoreCaretPosition.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
     this.setState({ document: nextProps.document });
+  }
+
+  setCaretPosition(element) {
+    const caretPosition = saveSelection(element);
+
+    this.setState({ caretPosition });
+  }
+
+  restoreCaretPosition(element, caretPosition) {
+    restoreSelection(element, caretPosition);
   }
 
   receivedOperation(data) {
@@ -153,12 +168,15 @@ export default class DocumentContainer extends React.Component {
 
   render() {
     const { document, clientID, dispatch } = this.props;
-    const { documentOptions } = this.state;
+    const { documentOptions, caretPosition } = this.state;
 
     return (
       <div>
         <DocumentEditor
           {...this.props}
+          caretPosition={caretPosition}
+          setCaretPosition={this.setCaretPosition}
+          restoreCaretPosition={this.restoreCaretPosition}
           documentOptions={documentOptions}
           handleInput={this.handleInput}
           ref={doc => this.document = doc}
