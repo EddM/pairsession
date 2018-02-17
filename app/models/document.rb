@@ -3,7 +3,7 @@ class Document < ApplicationRecord
   has_many :operations
 
   before_create do |record|
-    record.name ||= self.class.generate_name
+    record.name ||= Document.generate_name
   end
 
   def apply_operation(operation, client_version)
@@ -51,8 +51,6 @@ class Document < ApplicationRecord
   end
 
   class << self
-    private
-
     def generate_name
       SecureRandom.hex(4)
     end
