@@ -11,7 +11,7 @@ class Document < ApplicationRecord
       operation = transform_old_operation(operation, client_version)
     end
 
-    transaction do
+    with_lock do
       operations.create body: operation.ops.to_json,
                         base_length: operation.base_length,
                         target_length: operation.target_length,
