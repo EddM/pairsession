@@ -12,8 +12,11 @@
 
 ActiveRecord::Schema.define(version: 20170723204000) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "collaborators", force: :cascade do |t|
-    t.integer "document_id"
+    t.bigint "document_id"
     t.string "client_id"
     t.string "client_alias"
     t.string "status"
@@ -30,8 +33,8 @@ ActiveRecord::Schema.define(version: 20170723204000) do
   end
 
   create_table "operations", force: :cascade do |t|
-    t.integer "document_id"
-    t.integer "collaborator_id"
+    t.bigint "document_id"
+    t.bigint "collaborator_id"
     t.text "body"
     t.integer "base_length"
     t.integer "target_length"

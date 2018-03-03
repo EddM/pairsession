@@ -8,7 +8,6 @@ export default class DocumentCable {
     this.documentName = documentName;
     this.callbacks = callbacks;
     this.cable = ActionCable.createConsumer(env.ACTION_CABLE_URL);
-    this.clientVersion = 0;
 
     this.subscription = this.cable.subscriptions.create({ channel: CHANNEL_NAME, document_name: this.documentName }, {
       connected: this.connected.bind(this),
@@ -20,13 +19,12 @@ export default class DocumentCable {
     this.subscription.perform(action, params);
   }
 
-  performOperation(operation, clientID) {
-    this.clientVersion++;
-
+  performOperation(operation, clientID, clientVersion) {
+    console.log(operation);
     this.subscription.perform('operation', {
       client_id: clientID,
       operation: operation,
-      client_version: this.clientVersion,
+      client_version: clientVersion,
     });
   }
 
@@ -43,11 +41,11 @@ export default class DocumentCable {
         break;
       case 'document':
         // received full document
+        console.log('rec doc');
         this.callbacks.receivedDocument(data);
         break;
       case 'operation':
         // received an operation (update to the document)
-        this.clientVersion = data.version;
         this.callbacks.receivedOperation(data);
         break;
       case 'collaborator':

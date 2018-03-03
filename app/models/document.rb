@@ -7,22 +7,31 @@ class Document < ApplicationRecord
   end
 
   def apply_operation(operation, client_version)
-    unless client_version > version
-      operation = transform_old_operation(operation, client_version)
-    end
-
     with_lock do
+      unless client_version > version
+        operation = transform_old_operation(operation, client_version)
+      end
+
       operations.create body: operation.ops.to_json,
                         base_length: operation.base_length,
                         target_length: operation.target_length,
                         client_version: client_version
 
       new_body = operation.apply(body)
-      update body: new_body
+      self.body = new_body
+      self.version = client_version
+      save!
       Rails.cache.write body_cache_key, new_body
+      Rails.cache.write [id, :version], client_version
     end
 
     operation
+  end
+
+  def version
+    Rails.cache.fetch [id, :version] do
+      read_attribute :version
+    end
   end
 
   def body
@@ -43,7 +52,7 @@ class Document < ApplicationRecord
   end
 
   def transform_old_operation(operation, client_version)
-    operations.where("version > ?", client_version).find_each do |other_operation|
+    operations.where("client_version >= ?", client_version).find_each do |other_operation|
       operation = OT::TextOperation.transform(operation, other_operation).first
     end
 

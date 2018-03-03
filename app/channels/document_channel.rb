@@ -61,7 +61,9 @@ class DocumentChannel < ApplicationCable::Channel
     client_version = data[:client_version]
 
     # apply it to the document
-    if document.apply_operation(operation, client_version)
+    operation = document.apply_operation(operation, client_version)
+
+    if operation
       # broadcast the change to all subscribed
       ActionCable.server.broadcast "documents.#{document.name}.operations", {
         action: "operation",

@@ -26,6 +26,7 @@ export default class DocumentContainer extends React.Component {
       status: DOCUMENT_STATUS.SYNC,
       document: props.document,
       caretPosition: null,
+      clientVersion: 0,
       documentOptions: {
         syntaxMode: 'ruby',
       }
@@ -33,7 +34,7 @@ export default class DocumentContainer extends React.Component {
 
     this.cable = new DocumentCable(props.document.name, {
       subscribedToDocument: (data) => this.props.dispatch(receivedClientID(data.client_id)),
-      receivedDocument: (data) => this.props.dispatch(receivedDocument(data.document)),
+      receivedDocument: this.receivedDocument.bind(this),
       receivedOperation: this.receivedOperation.bind(this),
       receivedCollaborator: (data) => this.props.dispatch(receivedCollaborator(data.collaborator)),
     });
@@ -44,10 +45,21 @@ export default class DocumentContainer extends React.Component {
     this.syntaxModeChanged = this.syntaxModeChanged.bind(this);
     this.setCaretPosition = this.setCaretPosition.bind(this);
     this.restoreCaretPosition = this.restoreCaretPosition.bind(this);
+    this.receivedDocument = this.receivedDocument.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
     this.setState({ document: nextProps.document });
+  }
+
+  receivedDocument(data) {
+    const { document } = data;
+
+    this.setState({
+      clientVersion: document.version,
+    });
+
+    this.props.dispatch(receivedDocument(document));
   }
 
   setCaretPosition(element) {
@@ -68,6 +80,8 @@ export default class DocumentContainer extends React.Component {
 
   receivedOperation(data) {
     const operation = ot.TextOperation.fromJSON(data.operation);
+
+    this.setState({ clientVersion: data.version });
 
     if (data.client_id != this.props.clientID) {
       // if this operation was by someone else
@@ -106,13 +120,20 @@ export default class DocumentContainer extends React.Component {
     this.props.dispatch(receivedDocument(newDocument));
   }
 
+  performOperation(operation, clientID) {
+    const clientVersion = this.state.clientVersion + 1;
+
+    this.setState({ clientVersion });
+    this.cable.performOperation(operation, clientID, clientVersion);
+  }
+
   receivedLocalOperation(operation) {
     const { status, document, buffer } = this.state;
     const { clientID } = this.props;
 
     if (status === DOCUMENT_STATUS.WAITING_FOR_ACK_WITH_BUFFER) {
       // send whats currently in our buffer
-      this.cable.performOperation(buffer, clientID);
+      this.performOperation(buffer, clientID);
 
       // clear the current buffer, and set state to reflect that we're waiting for acknowledgment of the
       // previously buffered operations
@@ -147,7 +168,7 @@ export default class DocumentContainer extends React.Component {
 
     if (status === DOCUMENT_STATUS.SYNC) {
       // send this new operation to the server
-      this.cable.performOperation(operation, this.props.clientID);
+      this.performOperation(operation, this.props.clientID);
 
       // set state to reflect the fact that we're now waiting for acknowledgment of this operation
       this.setState({
